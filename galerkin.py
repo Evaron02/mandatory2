@@ -221,9 +221,13 @@ class Chebyshev(Polynomial):
         if N == 0:
             return np.array([])
         return np.r_[np.pi, np.full( N - 1, np.pi /2)]
-
+    
     def eval(self, uh: np.ndarray, xj: np.ndarray | float) -> np.ndarray:
-        raise NotImplementedError
+        xj = np.atleast_1d(xj)
+        Xj = map_reference_domain(xj, self.domain, self.reference_domain)
+        return np.polynomial.chebyshev.chebval(Xj, uh)
+
+
 
     def inner_product(self, u: sp.Expr) -> np.ndarray:
         """Inner products (u, T_i), via the substitution x = cos(theta), integrating over

@@ -59,7 +59,15 @@ Implement:
   ```
   seems correct, so these two methods should be correct.
   I added Bounds for the `Chebyshev.L2_norm_sq` method, because it needed to handle case `N = 0` and `N > 0`, So i added one for the other method too, but these shouldne be nescessary 
-- [ ] `Chebyshev.eval` — mirror `Legendre.eval`, using `np.polynomial.chebyshev.chebval` instead of `legval`z.
+- [X] `Chebyshev.eval` — mirrored `Legendre.eval`, replacing `legval`z with `np.polynomial.chebyshev.chebval` did a little test to see if it works:
+  ´´´bash
+  uv run python -c "import numpy as np; from galerkin import Chebyshev; print(Chebyshev(3, domain=(0, 10)).eval(np.array([1., 2., 3.]), np.array([0., 5., 10.])))"
+  ´´´
+  which printed
+  ``` text
+  [ 2. -2.  6.]
+  ```
+  which is correct, so it seems to be working fine.
 - [ ] `Cosines` (`__init__`, `basis_function`, `derivative_basis_function`, `L2_norm_sq`) — mirror `Sines`, but with `cos(jπx)` and its `j=0` mode handled separately (its derivative vanishes identically for any order)z.
 - [ ] `DirichletLegendre.basis_function` — mirror `DirichletChebyshev.basis_function`, using Legendre polynomials instead of Chebyshevz.
 - [ ] `NeumannLegendre` and `NeumannChebyshev` (`__init__`, `basis_function`) — composite spaces enforcing homogeneous derivative (Neumann) boundary conditions via a stencil matrix `S`, following the same pattern as `DirichletLegendre`/`DirichletChebyshev`, but solving for a stencil coefficient that makes `ψ_j'(±1) = 0`. See [lecture 11](https://matmek-4270.github.io/matmek4270-book/lecture11.html#neumann-boundary-conditions) for the boundary-derivative values to use.
