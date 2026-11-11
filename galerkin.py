@@ -167,7 +167,7 @@ class Polynomial(FunctionSpace):
         return self.basis_function(j).deriv(k)
 
     def mass_matrix(self) -> sparse.spmatrix:
-        raise NotImplementedError
+        return sparse.diags(self.L2_norm_sq(self.N))
 
 
 class Legendre(Polynomial):

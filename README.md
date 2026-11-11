@@ -28,8 +28,26 @@ uv run python galerkin.py
 
 Implement:
 - [X] `Polynomial.reference_domain` — replaced Not Implimented Error by the domain (-1,1), seems to work just fine :)
-- [X] `Polynomial.derivative_basis_function` — Implemented the k'th derivative of `basis_function(j)`; did a trial run using `uv run python -c "from galerkin import Legendre; print(Legendre(4).derivative_basis_function(2, 2)(0))"` which printed `3.0` so it seems to be working
-- [ ] `Polynomial.mass_matrix` — the (diagonal) mass matrix built from `self.L2_norm_sq`, again shared by `Legendre` and `Chebyshev`.
+- [X] `Polynomial.derivative_basis_function` — Implemented the k'th derivative of `basis_function(j)`; did a trial run using 
+  ```bash
+  uv run python -c "from galerkin import Legendre; print(Legendre(4).derivative_basis_function(2, 2)(0))"
+  ```
+    which printed 
+    ```text
+    3.0 
+    ```
+    so it seems to be working :D
+- [X] `Polynomial.mass_matrix` — Implemented the (diagonal) mass matrix built from `self.L2_norm_sq`, should work for `Legendre` and `Chebyshev`. did a trial run by using 
+  ```bash
+  uv run python -c "from galerkin import Legendre; V = Legendre(3); V.L2_norm_sq = lambda n: [2.0, 4.0, 6.0]; print(V.mass_matrix().toarray())"
+  ```
+    which printed
+  ```text
+  [[2. 0. 0.]
+   [0. 4. 0.]
+   [0. 0. 6.]]
+  ```
+  Which is correct, so this method should be working jsut fine :)
 - [ ] `Legendre.L2_norm_sq` and `Chebyshev.L2_norm_sq` — the L2 norms of the Legendre/Chebyshev polynomials. These stay separate (unlike the three above) since the closed-form formula differs per basisz.
 - [ ] `Chebyshev.eval` — mirror `Legendre.eval`, using `np.polynomial.chebyshev.chebval` instead of `legval`z.
 - [ ] `Cosines` (`__init__`, `basis_function`, `derivative_basis_function`, `L2_norm_sq`) — mirror `Sines`, but with `cos(jπx)` and its `j=0` mode handled separately (its derivative vanishes identically for any order)z.
