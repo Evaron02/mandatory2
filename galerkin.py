@@ -186,8 +186,11 @@ class Legendre(Polynomial):
         return Leg.basis(j)
 
     def L2_norm_sq(self, N: int) -> np.ndarray:
-        raise NotImplementedError
-
+        if N < 0:
+            raise ValueError(f"N must be at least 0, got {N}")
+        return 2/(2*np.arange(N) + 1)
+        
+    
     def eval(self, uh: np.ndarray, xj: np.ndarray | float) -> np.ndarray:
         xj = np.atleast_1d(xj)
         Xj = map_reference_domain(xj, self.domain, self.reference_domain)
@@ -213,7 +216,11 @@ class Chebyshev(Polynomial):
         return 1 / sp.sqrt(1 - x**2)
 
     def L2_norm_sq(self, N: int) -> np.ndarray:
-        raise NotImplementedError
+        if N < 0:
+            raise ValueError(f"N must be at least 0, got {N}")
+        if N == 0:
+            return np.array([])
+        return np.r_[np.pi, np.full( N - 1, np.pi /2)]
 
     def eval(self, uh: np.ndarray, xj: np.ndarray | float) -> np.ndarray:
         raise NotImplementedError

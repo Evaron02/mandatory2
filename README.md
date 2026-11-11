@@ -48,7 +48,17 @@ Implement:
    [0. 0. 6.]]
   ```
   Which is correct, so this method should be working jsut fine :)
-- [ ] `Legendre.L2_norm_sq` and `Chebyshev.L2_norm_sq` — the L2 norms of the Legendre/Chebyshev polynomials. These stay separate (unlike the three above) since the closed-form formula differs per basisz.
+- [X] `Legendre.L2_norm_sq` and `Chebyshev.L2_norm_sq` — Implemented both squared norms, according to they're properties. to check if it worked i did:
+  ```bash
+  uv run python -c "from galerkin import Legendre, Chebyshev; print(Legendre(5).L2_norm_sq(3)); print(Chebyshev(5).L2_norm_sq(3))"
+  ```
+    which printed
+  ```text
+  [2.         0.66666667 0.4       ]
+  [3.14159265 1.57079633 1.57079633]
+  ```
+  seems correct, so these two methods should be correct.
+  I added Bounds for the `Chebyshev.L2_norm_sq` method, because it needed to handle case `N = 0` and `N > 0`, So i added one for the other method too, but these shouldne be nescessary 
 - [ ] `Chebyshev.eval` — mirror `Legendre.eval`, using `np.polynomial.chebyshev.chebval` instead of `legval`z.
 - [ ] `Cosines` (`__init__`, `basis_function`, `derivative_basis_function`, `L2_norm_sq`) — mirror `Sines`, but with `cos(jπx)` and its `j=0` mode handled separately (its derivative vanishes identically for any order)z.
 - [ ] `DirichletLegendre.basis_function` — mirror `DirichletChebyshev.basis_function`, using Legendre polynomials instead of Chebyshevz.
