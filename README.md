@@ -28,7 +28,7 @@ uv run python galerkin.py
 
 Implement:
 - [X] `Polynomial.reference_domain` — replaced Not Implimented Error by the domain (-1,1), seems to work just fine :)
-- [ ] `Polynomial.derivative_basis_function` — the k'th derivative of `basis_function(j)`; both `Legendre`'s and `Chebyshev`'s basis functions are `numpy.polynomial` objects with a `.deriv(k)` method, so one implementation here covers both.
+- [X] `Polynomial.derivative_basis_function` — Implemented the k'th derivative of `basis_function(j)`; did a trial run using `uv run python -c "from galerkin import Legendre; print(Legendre(4).derivative_basis_function(2, 2)(0))"` which printed `3.0` so it seems to be working
 - [ ] `Polynomial.mass_matrix` — the (diagonal) mass matrix built from `self.L2_norm_sq`, again shared by `Legendre` and `Chebyshev`.
 - [ ] `Legendre.L2_norm_sq` and `Chebyshev.L2_norm_sq` — the L2 norms of the Legendre/Chebyshev polynomials. These stay separate (unlike the three above) since the closed-form formula differs per basisz.
 - [ ] `Chebyshev.eval` — mirror `Legendre.eval`, using `np.polynomial.chebyshev.chebval` instead of `legval`z.

@@ -164,7 +164,7 @@ class Polynomial(FunctionSpace):
     def basis_function(self, j, sympy=False): ...
 
     def derivative_basis_function(self, j: int, k: int = 1) -> ABCPolyBase:
-        raise NotImplementedError
+        return self.basis_function(j).deriv(k)
 
     def mass_matrix(self) -> sparse.spmatrix:
         raise NotImplementedError
