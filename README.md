@@ -60,6 +60,7 @@ Implement:
   seems correct, so these two methods should be correct.
   I added Bounds for the `Chebyshev.L2_norm_sq` method, because it needed to handle case `N = 0` and `N > 0`, So i added one for the other method too, but these shouldne be nescessary 
 - [X] `Chebyshev.eval` — mirrored `Legendre.eval`, replacing `legval`z with `np.polynomial.chebyshev.chebval` did a little test to see if it works:
+  
   ´´´bash
   uv run python -c "import numpy as np; from galerkin import Chebyshev; print(Chebyshev(3, domain=(0, 10)).eval(np.array([1., 2., 3.]), np.array([0., 5., 10.])))"
   ´´´
@@ -68,9 +69,63 @@ Implement:
   [ 2. -2.  6.]
   ```
   which is correct, so it seems to be working fine.
-- [ ] `Cosines` (`__init__`, `basis_function`, `derivative_basis_function`, `L2_norm_sq`) — mirror `Sines`, but with `cos(jπx)` and its `j=0` mode handled separately (its derivative vanishes identically for any order)z.
-- [ ] `DirichletLegendre.basis_function` — mirror `DirichletChebyshev.basis_function`, using Legendre polynomials instead of Chebyshevz.
-- [ ] `NeumannLegendre` and `NeumannChebyshev` (`__init__`, `basis_function`) — composite spaces enforcing homogeneous derivative (Neumann) boundary conditions via a stencil matrix `S`, following the same pattern as `DirichletLegendre`/`DirichletChebyshev`, but solving for a stencil coefficient that makes `ψ_j'(±1) = 0`. See [lecture 11](https://matmek-4270.github.io/matmek4270-book/lecture11.html#neumann-boundary-conditions) for the boundary-derivative values to use.
+- [x] `Cosines` (`__init__`, `basis_function`, `derivative_basis_function`, `L2_norm_sq`) — Implemented the `cos(jπx)` basis, the constant mode has squared norm `1` and zero derivatives of positive order. The remaining modes have squared norm `1/2`.
+
+  Quick check for the squared norms and the constant mode’s first derivative.
+
+  ```bash
+  uv run python -c "from galerkin import Cosines; V = Cosines(3); print(V.L2_norm_sq(3)); print(V.derivative_basis_function(0, 1)(0.5) == 0)"
+  ```
+
+  this is what printed:
+
+  ```text
+  [1.  0.5 0.5]
+  True
+  ```
+  all good here
+
+- [x] `DirichletLegendre.basis_function` — Implemented `P_j - P_(j+2)`, which vanishes at both endpoints of the reference interval.
+
+  checking using this
+
+  ```bash
+  uv run python -c "import numpy as np; from galerkin import DirichletLegendre; V = DirichletLegendre(3); print(np.allclose(V.basis_function(1)(np.array([-1., 1.])), 0))"
+  ```
+
+  print:
+
+  ```text
+  True
+  ```
+  all good
+
+- [x] `NeumannLegendre` and `NeumannChebyshev` (`__init__`, `basis_function`) — Implemented the stencil matrix `S` and the basis functions so that `ψ_j'(±1) = 0`. 
+
+  quick check that it sseems fine
+
+  ```bash
+  uv run python -c "import numpy as np; from galerkin import NeumannLegendre, NeumannChebyshev; points = np.array([-1., 1.]); print(np.allclose(NeumannLegendre(3).derivative_basis_function(1)(points), 0)); print(np.allclose(NeumannChebyshev(3).derivative_basis_function(1)(points), 0))"
+  ```
+
+  here is what printed:
+
+  ```text
+  True
+  True
+  ```
+
+### Full test run
+
+```bash
+uv run pytest -q galerkin.py
+```
+
+```text
+3 passed, 1 warning in 21.54s
+```
+
+The collection warning is for `TestFunction`, a Galerkin helper class whose name starts with `Test`. All three assignment tests passed.
 
 ## Architecture, in brief
 

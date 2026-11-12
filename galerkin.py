@@ -167,7 +167,7 @@ class Polynomial(FunctionSpace):
         return self.basis_function(j).deriv(k)
 
     def mass_matrix(self) -> sparse.spmatrix:
-        return sparse.diags(self.L2_norm_sq(self.N))
+        return sparse.diags(self.L2_norm_sq(self.N + 1), format="csr")
 
 
 class Legendre(Polynomial):
@@ -304,23 +304,31 @@ class Sines(Trigonometric):
 
 
 class Cosines(Trigonometric):
-    def __init__(
-        self, N: int, domain: Domain = (0, 1), bc: BC = (0, 0), constraint: int = 0
-    ) -> None:
-        raise NotImplementedError
+    def __init__( self, N: int, domain: Domain = (0, 1), bc: BC = (0, 0), constraint: int = 0 ) -> None:
+        Trigonometric.__init__(self, N, domain=domain)
+        self.B = Neumann(bc, domain, self.reference_domain)
+        
 
     @overload
     def basis_function(self, j: int, sympy: Literal[True]) -> sp.Expr: ...
     @overload
     def basis_function(self, j: int, sympy: Literal[False] = False) -> BasisCallable: ...
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
+        if sympy:
+            return sp.cos((j) * sp.pi * x)
+        return lambda Xj: np.cos((j) * np.pi * Xj)
 
     def derivative_basis_function(self, j: int, k: int = 1) -> BasisCallable:
-        raise NotImplementedError
+        scale = ((j) * np.pi) ** k * {0: 1, 1: -1}[((k + 1)// 2) % 2]
+        if k % 2 == 0:
+            return lambda Xj: scale * np.cos((j) * np.pi * Xj)
+        else:
+            return lambda Xj: scale * np.sin((j) * np.pi * Xj)
 
     def L2_norm_sq(self, N: int) -> np.ndarray:
-        raise NotImplementedError
+        norms = np.full(N, 0.5)
+        norms[:1] = 1.0
+        return norms
 
 
 # Create classes to hold the boundary function
@@ -421,21 +429,32 @@ class DirichletLegendre(Composite, Legendre):
     @overload
     def basis_function(self, j: int, sympy: Literal[False] = False) -> Leg: ...
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
+        if sympy:
+            return sp.legendre(j, x) - sp.legendre(j + 2, x)
+        return Leg.basis(j) - Leg.basis(j + 2)
 
 
 class NeumannLegendre(Composite, Legendre):
     def __init__(
         self, N: int, domain: Domain = (-1, 1), bc: BC = (0, 0), constraint: int = 0
     ) -> None:
-        raise NotImplementedError
+        Legendre.__init__(self, N, domain=domain)
+        self.B = Neumann(bc, domain, self.reference_domain)
+        j = np.arange(N + 1, dtype=float)
+        a = j * (j + 1) / ((j + 2) * (j + 3))
+        self.S = sparse.diags((1.0, -a), (0, 2), shape=(N + 1, N + 3), format="csr")
 
     @overload
     def basis_function(self, j: int, sympy: Literal[True]) -> sp.Expr: ...
     @overload
     def basis_function(self, j: int, sympy: Literal[False] = False) -> Leg: ...
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
+        if sympy:
+            n = sp.sympify(j)
+            a = n * (n + 1) / ((n + 2) * (n + 3))
+            return sp.legendre(n, x) - a * sp.legendre(n + 2, x)
+        a = j * (j + 1) / ((j + 2) * (j + 3))
+        return Leg.basis(j) - a * Leg.basis(j + 2)
 
 
 class DirichletChebyshev(Composite, Chebyshev):
@@ -458,14 +477,23 @@ class NeumannChebyshev(Composite, Chebyshev):
     def __init__(
         self, N: int, domain: Domain = (-1, 1), bc: BC = (0, 0), constraint: int = 0
     ) -> None:
-        raise NotImplementedError
+        Chebyshev.__init__(self, N, domain=domain)
+        self.B = Neumann(bc, domain, self.reference_domain)
+        j = np.arange(N + 1, dtype=float)
+        a = (j / (j + 2)) ** 2
+        self.S = sparse.diags((1.0, -a), (0, 2), shape=(N + 1, N + 3), format="csr")
 
     @overload
     def basis_function(self, j: int | sp.Symbol, sympy: Literal[True]) -> sp.Expr: ...
     @overload
     def basis_function(self, j: int, sympy: Literal[False] = False) -> Cheb: ...
     def basis_function(self, j, sympy=False):
-        raise NotImplementedError
+        if sympy:
+            n = sp.sympify(j)
+            a = (n / (n + 2)) ** 2
+            return sp.cos(n * sp.acos(x)) - a * sp.cos((n + 2) * sp.acos(x))
+        a = (j / (j + 2)) ** 2
+        return Cheb.basis(j) - a * Cheb.basis(j + 2)
 
 
 class BasisFunction:
